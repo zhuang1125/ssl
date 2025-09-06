@@ -1,0 +1,7 @@
+[code_sign_cert_test]
+basicConstraints = CA:FALSE
+nsComment = "OpenSSL Generated Code Signing Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = digitalSignature,keyEncipherment
+extendedKeyUsage = codeSigning

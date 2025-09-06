@@ -1,0 +1,26 @@
+# 证书自动续期配置文件
+# 复制此文件为 cert-renew.conf 并根据需要修改
+
+# 续期警告天数（默认：30天）
+WARNING_DAYS=30
+
+# 根证书文件路径
+ROOT_CERT=out/root.crt
+
+# 保留的历史版本数量（默认：5）
+KEEP_VERSIONS=5
+
+# 通知邮件地址（可选）
+# NOTIFICATION_EMAIL=admin@example.com
+
+# Webhook URL（可选，如Slack、钉钉等）
+# WEBHOOK_URL=https://hooks.slack.com/services/...
+
+# 默认密码
+PFX_PASSWORD=123456
+
+# 是否自动续期所有证书（true/false）
+# AUTO_RENEW_ALL=false
+
+# 通知模板（可选）
+# 您可以自定义通知消息格式
