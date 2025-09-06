@@ -10,14 +10,18 @@ This is a comprehensive self-signed wildcard SSL certificate generation tool des
 
 ### Generate Certificates (Enhanced)
 ```bash
-./gen.cert.sh [options] <domain> [<domain2>] ...
+./gen.cert.sh [options] --domain <domain> [--domain <domain2>] ...
 ```
-- Generates wildcard SSL certificates for one or more domains
+- Generates wildcard SSL certificates for one or more domains and/or IP addresses
 - Enhanced with error handling, colored output, and detailed logging
 - New options:
   - `-v, --verbose`: Show detailed logs
   - `-p, --password <password>`: Set PFX password (default: 123456)
   - `-a, --algorithm <algorithm>`: Set key algorithm (default: rsa:4096)
+  - `--domain <domain>`: Add a single domain (supports wildcards automatically)
+  - `--domains <domains>`: Multiple domains, comma-separated (e.g., `example.com,test.com`)
+  - `--ip <IP>`: Add a single IP address to certificate
+  - `--ips <IPs>`: Multiple IP addresses, comma-separated (e.g., `192.168.1.100,127.0.0.1`)
 
 ### Advanced Certificate Generation
 ```bash
@@ -28,6 +32,30 @@ This is a comprehensive self-signed wildcard SSL certificate generation tool des
 - Multiple hash algorithms: SHA-256, SHA-384, SHA-512
 - Multiple certificate types: Server, Client, Code Signing, Email
 - Example: `./gen-cert-advanced.sh --ecc prime256v1 --jks example.dev`
+
+### Usage Examples
+```bash
+# Single domain with wildcards
+./gen.cert.sh --domain example.dev
+
+# Multiple domains
+./gen.cert.sh --domain example.dev --domain api.example.dev
+
+# Multiple domains using comma-separated format
+./gen.cert.sh --domains example.com,test.com,cdn.example.com
+
+# Include IP addresses
+./gen.cert.sh --domain example.com --ip 192.168.1.100 --ip 127.0.0.1
+
+# Mixed domains and IPs
+./gen.cert.sh --domains example.com,test.com --ips 192.168.1.100,127.0.0.1
+
+# IP-only certificate (no domains)
+./gen.cert.sh --ip 192.168.1.100 --ips 10.0.0.1,172.16.0.1
+
+# With verbose output and custom password
+./gen.cert.sh --domain example.dev --ip 127.0.0.1 -v -p mypassword
+```
 
 ### Generate Root Certificate
 ```bash
@@ -137,19 +165,21 @@ out/
 ├── index.txt          # Certificate index file
 ├── serial             # Serial number file
 ├── backups/           # Backup directory
-└── <domain>/          # Domain-specific directory
-    ├── <domain>.crt           # Certificate
-    ├── <domain>.bundle.crt    # Certificate + CA chain
-    ├── <domain>.pfx           # PKCS#12 format
-    ├── <domain>.jks           # Java KeyStore (if generated)
-    ├── <domain>.key.pem       # Private key
-    ├── <domain>.key.der       # DER format (if generated)
-    ├── <domain>.key.pk8       # PKCS#8 format (if generated)
-    ├── root.crt               # Symlink to root certificate
-    └── <timestamp>/           # Versioned directory
-        ├── <domain>.crt
-        ├── <domain>.bundle.crt
-        ├── <domain>.pfx
+└── <domain>/          # Domain/IP-specific directory
+    │   # Note: For IP-only certificates, directory uses IP with dots replaced by underscores
+    │   # Example: out/192_168_1_100/ for IP 192.168.1.100
+    ├── <cert_name>.crt           # Certificate (name varies based on input)
+    ├── <cert_name>.bundle.crt    # Certificate + CA chain
+    ├── <cert_name>.pfx           # PKCS#12 format
+    ├── <cert_name>.jks           # Java KeyStore (if generated)
+    ├── <cert_name>.key.pem       # Private key
+    ├── <cert_name>.key.der       # DER format (if generated)
+    ├── <cert_name>.key.pk8       # PKCS#8 format (if generated)
+    ├── root.crt                  # Symlink to root certificate
+    └── <timestamp>/              # Versioned directory (YYYYMMDD-HHMM)
+        ├── <cert_name>.crt
+        ├── <cert_name>.bundle.crt
+        ├── <cert_name>.pfx
         └── ...
 ```
 
@@ -159,12 +189,20 @@ out/
 - **Algorithm**: RSA 4096-bit with SHA-256
 - **Extensions**: Includes serverAuth, clientAuth, and codeSigning
 - **Wildcard Support**: Automatic SAN generation for *.domain.com and domain.com
+- **IP Address Support**: Supports including IP addresses in certificates
 - **PFX Password**: Always "123456" for ClickOnce compatibility
 
 ### SAN Format
 The tool generates Subject Alternative Names dynamically:
 ```
+# Domains only
 subjectAltName=DNS:*.one.dev,DNS:one.dev,DNS:*.two.dev,DNS:two.dev
+
+# Mixed domains and IPs
+subjectAltName=DNS:*.example.dev,DNS:example.dev,IP:192.168.1.100,IP:127.0.0.1
+
+# IP addresses only
+subjectAltName=IP:192.168.1.100,IP:127.0.0.1,IP:10.0.0.1
 ```
 
 ### Certificate Trust Model
@@ -179,3 +217,5 @@ subjectAltName=DNS:*.one.dev,DNS:one.dev,DNS:*.two.dev,DNS:two.dev
 - The tool maintains certificate history through timestamped directories
 - Symlinks ensure stable paths for configuration files (nginx, IIS, etc.)
 - Default organization information: China, Guangdong Province, Zhuhai, Cutebaby
+- For IP-only certificates, the certificate name uses the IP address with dots replaced by underscores (e.g., 192_168_1_100)
+- The tool supports backward compatibility with the old positional argument format (`./gen.cert.sh example.dev test.com`)

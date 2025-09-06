@@ -15,11 +15,21 @@
 - **自动续期功能**：配置定时任务，自动检查和续期
 - **多平台安装**：自动在Linux、macOS、Windows安装证书
 - **增强日志系统**：彩色输出、多级别日志、错误处理
+- **灵活的参数传递**：支持 `--domain`、`--domains`、`--ip`、`--ips` 等多种方式
 
 ### 🚀 使用示例
 ```bash
 # 基础用法（已增强）
 ./gen.cert.sh -v example.dev cdn.example.dev
+
+# 使用新的参数格式
+./gen.cert.sh --domain example.dev --domain cdn.example.dev
+
+# 使用 --domains 和 --ips 参数
+./gen.cert.sh --domains example.com,test.com --ips 192.168.1.100,127.0.0.1
+
+# 纯IP地址证书
+./gen.cert.sh --ip 127.0.0.1 --ips 192.168.1.1,10.0.0.1
 
 # 使用ECC算法
 ./gen-cert-advanced.sh --ecc prime256v1 --jks example.dev
@@ -60,7 +70,13 @@ subjectAltName=DNS:*.one.dev,DNS:one.dev,DNS:*.two.dev,DNS:two.dev,DNS:*.three.d
 # 生成证书（已增强，支持彩色输出和错误处理）
 ./gen.cert.sh example.dev
 
-# 多域名
+# 使用 --domain 参数（推荐）
+./gen.cert.sh --domain example.dev --domain cdn.example.dev
+
+# 使用 --domains 和 --ips 参数（逗号分隔）
+./gen.cert.sh --domains example.com,test.com --ips 192.168.1.100,127.0.0.1
+
+# 多域名（旧格式仍支持）
 ./gen.cert.sh example.dev cdn.example.dev api.example.dev
 
 # 使用自定义密码
@@ -75,8 +91,14 @@ subjectAltName=DNS:*.one.dev,DNS:one.dev,DNS:*.two.dev,DNS:two.dev,DNS:*.three.d
 # 生成Java KeyStore
 ./gen-cert-advanced.sh --jks example.dev
 
-# 包含IP地址
+# 包含IP地址（使用高级脚本）
 ./gen-cert-advanced.sh --ip 127.0.0.1 example.dev
+
+# 纯IP地址证书（无域名）
+./gen.cert.sh --ip 127.0.0.1 --ips 192.168.1.1,10.0.0.1
+
+# 混合域名和IP
+./gen.cert.sh --domain example.com --ip 127.0.0.1 --ips 192.168.1.100
 ```
 
 ### 证书管理
@@ -99,18 +121,56 @@ sudo ./install-cert.sh --system
 
 ### 生成证书
 ```bash
-./gen.cert.sh <domain> [<domain2>] [<domain3>] [<domain4>] ...
-```
-把 `<domain>` 替换成你的域名，例如 `example.dev`
+# 新的推荐用法（更清晰明确）
+./gen.cert.sh --domain <domain> [--domain <domain2>] ...
+./gen.cert.sh --domains <domain1>,<domain2> [--ips <ip1>,<ip2>]
+./gen.cert.sh --ip <ip> [--ip <ip2>] ...
+./gen.cert.sh --ips <ip1>,<ip2> [--domains <domain1>,<domain2>]
 
-如果有多个项目网站，可以把所有网站都加上去，用空格隔开。
+# 旧格式（仍然支持）
+./gen.cert.sh <domain> [<domain2>] [<domain3>] ...
+```
+
+#### 参数说明
+- `--domain <域名>` - 添加单个域名，支持泛域名
+- `--domains <域名>` - 多个域名，逗号分隔，如 `example.com,test.com`
+- `--ip <IP地址>` - 添加单个IP地址到证书
+- `--ips <IP地址>` - 多个IP地址，逗号分隔，如 `192.168.1.100,127.0.0.1`
+- `-v, --verbose` - 显示详细日志
+- `-p, --password <密码>` - 指定PFX文件密码（默认：123456）
+- `-a, --algorithm <算法>` - 指定密钥算法（默认：rsa:4096）
+
+#### 使用示例
+```bash
+# 单域名
+./gen.cert.sh --domain example.dev
+
+# 多域名（逗号分隔）
+./gen.cert.sh --domains example.com,test.com,api.com
+
+# 混合域名和IP
+./gen.cert.sh --domain example.com --ip 127.0.0.1 --ips 192.168.1.100
+
+# 纯IP地址证书
+./gen.cert.sh --ip 192.168.1.100 --ips 10.0.0.1,172.16.0.1
+```
+
+把 `<domain>` 替换成你的域名，例如 `example.dev`。证书将自动包含泛域名（如 `*.example.dev`）和主域名。
+
+如果同时需要域名和IP地址，可以使用上述所有参数的任意组合。
 
 生成的证书位于：
 ```text
-out/<domain>/<domain>.crt
-out/<domain>/<domain>.bundle.crt
-out/<domain>/<domain>.pfx
+out/<domain>/<domain>.crt              # 证书文件
+out/<domain>/<domain>.bundle.crt       # 证书链（包含根证书）
+out/<domain>/<domain>.key.pem          # 私钥文件
+out/<domain>/<domain>.pfx              # PKCS#12格式（含密码）
 ```
+
+**注意**：
+- 如果只有IP地址没有域名，目录名将使用IP地址（点替换为下划线），如 `out/127_0_0_1/`
+- 每次生成都会创建时间戳目录，如 `20250906-2138/`，保留历史版本
+- 符号链接会自动创建，指向最新版本的文件
 
 证书有效期是 2 年，你可以修改 `ca.cnf` 来修改这个年限。
 
