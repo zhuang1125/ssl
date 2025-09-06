@@ -12,9 +12,9 @@ fi
 
 # Generate root cert along with root key
 openssl req -config ca.cnf \
-    -newkey rsa:2048 -nodes -keyout out/root.key.pem \
-    -new -x509 -days 7300 -out out/root.crt \
-    -subj "/C=CN/ST=Guangdong/L=Guangzhou/O=Fishdrowned/CN=Fishdrowned ROOT CA"
+    -newkey rsa:4096 -nodes -keyout out/root.key.pem \
+    -new -x509 -days 73000 -out out/root.crt \
+    -subj "/C=CN/ST=Guangdong/L=Zhuhai/O=Cutebaby/CN=Cutebaby ROOT CA"
 
 # Generate cert key
-openssl genrsa -out "out/cert.key.pem" 2048
+openssl genrsa -out "out/cert.key.pem" 4096

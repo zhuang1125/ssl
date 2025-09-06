@@ -62,7 +62,7 @@ out/<domain>/<domain>.bundle.crt
 ## 配置
 你可以修改 `ca.cnf` 来修改你的证书年限。
 ```ini
-default_days    = 730
+default_days    = 7300
 ```
 
 可以修改 `gen.root.sh` 来自定义你的根证书名称和组织。

@@ -25,7 +25,7 @@ if [ ! -f "out/root.crt" ]; then
 fi
 
 # 创建私钥
-openssl genrsa -out "${DIR}/${COMPANY_NAME}.key" 2048
+openssl genrsa -out "${DIR}/${COMPANY_NAME}.key" 4096
 
 # 创建证书签名请求(CSR)
 openssl req -new -key "${DIR}/${COMPANY_NAME}.key" \
@@ -38,7 +38,7 @@ openssl x509 -req -in "${DIR}/${COMPANY_NAME}.csr" \
     -CAkey ./out/root.key.pem \
     -CAcreateserial \
     -out "${DIR}/${COMPANY_NAME}.crt" \
-    -days 730 \
+    -days 7300 \
     -sha256 \
     -extfile <(cat <<EOF
 [cert_ext]
