@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 if [ -z "$1" ]
 then
@@ -15,9 +15,9 @@ fi
 SAN=""
 for var in "$@"
 do
-    SAN+="DNS:*.${var},DNS:${var},"
+    SAN="$SAN""DNS:*.${var},DNS:${var},"
 done
-SAN=${SAN:0:${#SAN}-1}
+SAN="${SAN%?}"
 
 # Move to root directory
 cd "$(dirname "${BASH_SOURCE[0]}")"
